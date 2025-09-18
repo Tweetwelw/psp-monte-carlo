@@ -58,7 +58,7 @@ def lognormal_params_from_mean_std(mean, std):
 @st.cache_data(show_spinner=False)
 def load_default_csv():
     try:
-        df = pd.read_csv("monte (1).csv", encoding="utf-16")
+        df = pd.read_csv("sample.csv", encoding="utf-16")
         return df
     except Exception:
         return None
