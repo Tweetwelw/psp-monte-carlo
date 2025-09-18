@@ -255,22 +255,30 @@ def simulate_custom_psp(params, n_iter=10000, aov_cap=None, tight=False):
 # UI: Data input
 # ---------------------------
 with st.expander("1) Load data", expanded=True):
-    up = st.file_uploader("Upload CSV (utf-16 or utf-8). If empty, app will try ./monte.csv if any.", type=["csv"]) 
+    # uploader + дефолт из репозитория
+    up = st.file_uploader(
+        "Upload CSV (utf-16 or utf-8). If empty, app will try sample.csv(.gz) from the repo.",
+        type=["csv", "gz"]
+    )
+
+    source = None
     if up is not None:
         data = up.read()
         try:
             df_raw = pd.read_csv(io.BytesIO(data), encoding="utf-16")
         except Exception:
             df_raw = pd.read_csv(io.BytesIO(data))
+        source = f"uploaded: {up.name}"
     else:
-        df_raw = load_default_csv()
+        df_raw = load_default_csv()  # <= функция сверху должна пробовать sample.csv(.gz) и т.п.
         if df_raw is None:
-            st.warning("No file uploaded and ./monte.csv not found. Upload a CSV to continue.")
+            st.warning("No file uploaded and no default file found. Upload a CSV to continue.")
             st.stop()
+        source = "repo default (sample.csv/.gz or monte*.csv)"
 
     df = prepare_df(df_raw)
-    st.caption("Preview after basic preprocessing (Online only, essential columns (random 100 rows)):")
-    st.dataframe(df.sample(100), use_container_width=True)
+    st.caption(f"Data source → {source}")
+    st.dataframe(df.head(20), use_container_width=True)
 
 # Stats
 stats = get_payment_stats(df)
