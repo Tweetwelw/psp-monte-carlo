@@ -57,11 +57,24 @@ def lognormal_params_from_mean_std(mean, std):
 # ---------------------------
 @st.cache_data(show_spinner=False)
 def load_default_csv():
-    try:
-        df = pd.read_csv("sample.csv", encoding="utf-16")
-        return df
-    except Exception:
-        return None
+    candidates = [
+        ("sample.csv.gz", None, "gzip"),
+        ("sample.csv",     "utf-16", None),
+        ("monte (1).csv",  "utf-16", None),
+        ("monte.csv",      "utf-16", None),
+    ]
+    for name, enc, comp in candidates:
+        try:
+            if comp == "gzip":
+                return pd.read_csv(name, encoding=enc)  # pandas сам поймёт .gz
+            return pd.read_csv(name, encoding=enc) if enc else pd.read_csv(name)
+        except Exception:
+            # вторая попытка без явной кодировки
+            try:
+                return pd.read_csv(name)
+            except Exception:
+                continue
+    return None
 
 
 def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
